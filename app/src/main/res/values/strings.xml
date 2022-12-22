@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Trial Video Application</string>
+
+    <string name="error_connection">Connection error</string>
+    <string name="error_server_code">Server error code %s</string>
+    <string name="error_no_internet">No internet connection. Please check your internet connection.</string>
+</resources>
