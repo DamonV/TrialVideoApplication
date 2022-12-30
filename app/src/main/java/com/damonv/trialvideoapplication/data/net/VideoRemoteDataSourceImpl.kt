@@ -16,7 +16,6 @@ import javax.inject.Inject
 
 class VideoRemoteDataSourceImpl @Inject constructor(
     retrofit: Retrofit,
-    private val mConnectivityService: ConnectivityService,
     @CoroutineDispatcherIO private val mIoDispatcher: CoroutineDispatcher,
     @ApplicationContext private val context: Context
 ): VideoRemoteDataSource {
@@ -30,9 +29,6 @@ class VideoRemoteDataSourceImpl @Inject constructor(
     }
 
     override suspend fun getVideoList(): RemoteResultDTO =  withContext(mIoDispatcher) {
-        if (!mConnectivityService.getNetworkAvailability())
-            return@withContext RemoteResultDTO.Error(context.resources.getString(R.string.error_no_internet))
-
         try {
             val response = api.queryAsync()
             return@withContext if (response.isSuccessful && response.body()!= null)

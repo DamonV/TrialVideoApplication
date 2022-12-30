@@ -34,40 +34,38 @@ fun ImageLazyRow(modifier: Modifier = Modifier,
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .padding(8.dp)
     ) {
-        when (mainUiState) {
-            is MainUiState.Success ->
-                itemsIndexed(items = mainUiState.videoList) { index, item ->
 
-                    AsyncImage(
-                        model = item.posterUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        placeholder = painterResource(R.drawable.no_image),
-                        modifier = Modifier
-                            .size(70.dp, 70.dp)
-                            .clip(RoundedCornerShape(5.dp))
-                            .clickable {
-                                listIndex.value = index
-                            }
-                            .then(
-                                if (listIndex.value == index)
-                                    Modifier.border(2.dp, MaterialTheme.colorScheme.primary)
-                                else Modifier)
-                    )
+        if (mainUiState is MainUiState.Success && !mainUiState.videoList.isNullOrEmpty())
+            itemsIndexed(items = mainUiState.videoList) { index, item ->
 
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-            else -> {
-                items(1) {
-                    Box(
-                        modifier = Modifier
-                            .size(70.dp, 70.dp)
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(LigtGrey.copy(alpha = 0.3f)),
-                    )
-                }
+                AsyncImage(
+                    model = item.posterUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(R.drawable.no_image),
+                    modifier = Modifier
+                        .size(70.dp, 70.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .clickable {
+                            listIndex.value = index
+                        }
+                        .then(
+                            if (listIndex.value == index)
+                                Modifier.border(2.dp, MaterialTheme.colorScheme.primary)
+                            else Modifier)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
             }
-        }
+        else
+            items(1) {
+                Box(
+                    modifier = Modifier
+                        .size(70.dp, 70.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(LigtGrey.copy(alpha = 0.3f)),
+                )
+            }
     }
 
 }

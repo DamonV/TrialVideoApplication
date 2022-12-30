@@ -43,6 +43,11 @@ class MainViewModel @Inject constructor(
 
     var lastUri: String? = null
 
+    fun clearPlayerItems() {
+        lastUri = null
+        exoPlayer.clearMediaItems()
+    }
+
     override fun onCleared() {
         super.onCleared()
         exoPlayer.release()

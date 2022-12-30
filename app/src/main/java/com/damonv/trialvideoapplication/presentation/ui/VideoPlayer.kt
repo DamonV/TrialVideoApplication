@@ -1,6 +1,7 @@
 package com.damonv.trialvideoapplication.presentation.ui
 
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
@@ -10,13 +11,13 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -25,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.ui.PlayerView
+import com.damonv.trialvideoapplication.R
+import com.damonv.trialvideoapplication.TAG
 import com.damonv.trialvideoapplication.domain.MainUiState
 import com.damonv.trialvideoapplication.presentation.MainViewModel
 import com.damonv.trialvideoapplication.presentation.theme.customTextSyle
@@ -41,15 +44,6 @@ fun VideoPlayerBox(
 
     val context = LocalContext.current
 
-    //moved to the viewmodel
-    /*val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            prepare()
-            playWhenReady = true
-            repeatMode = Player.REPEAT_MODE_ONE
-        }
-    }*/
-
     LaunchedEffect(mainState) {
 
         //another option would be flows combine.
@@ -59,10 +53,14 @@ fun VideoPlayerBox(
         }
             .filter { it.second !is MainUiState.Loading }
             .collect {
+                Log.d(TAG, "collect snapshot")
                 if (it.second is MainUiState.Success) {
                     val item = it.second as MainUiState.Success
                     val index = it.first
-                    if (index in item.videoList.indices) {
+                    Log.d(TAG, "        snapshot $index")
+                    if (!item.errMsg.isNullOrEmpty() || item.videoList == null)
+                        viewModel.clearPlayerItems()
+                    else if (index in item.videoList.indices) {
                         val newUri = item.videoList[index].fileUrl
                         if (newUri != viewModel.lastUri){
                             viewModel.lastUri = newUri
@@ -73,7 +71,7 @@ fun VideoPlayerBox(
                             )
                         }
                     }
-                } else viewModel.exoPlayer.clearMediaItems()
+                } else viewModel.clearPlayerItems()
             }
     }
 
@@ -103,11 +101,12 @@ fun VideoPlayerBox(
             }
         )
 
-        if (mainState.value is MainUiState.Loading)
-            BoxText("Loading..", MaterialTheme.colorScheme.primary)
-        else if (mainState.value is MainUiState.Error)
-            BoxText("${(mainState.value as MainUiState.Error).msg}",
-                MaterialTheme.colorScheme.error)
+        val state = mainState.value
+        when {
+            state is MainUiState.Loading -> BoxText("Loading..", MaterialTheme.colorScheme.primary)
+            state is MainUiState.Success && !state.errMsg.isNullOrEmpty()
+                -> BoxText("${state.errMsg}", MaterialTheme.colorScheme.error)
+        }
 
         if (textVisibility)
             BasicTextField(
